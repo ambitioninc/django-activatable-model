@@ -12,19 +12,22 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     """
     Provides bulk activation/deactivation methods.
     """
+    def update(self, *args, **kwargs):
+        super(ActivatableQuerySet, self).update(*args, **kwargs)
+        if 'is_active' in kwargs:
+            model_activations_changed.send(self.model.__class__, instances=list(self), is_active=kwargs['is_active'])
+
     def activate(self):
         self.update(is_active=True)
-        self.model._get_activation_signal().send(self.model.__class__, instances=self, is_active=True)
 
     def deactivate(self):
         self.update(is_active=False)
-        self.model._get_activation_signal().send(self.model.__class__, instances=self, is_active=False)
 
     def delete(self, force=False):
         if force:
-            return super(ActivatableQuerySet, self).delete()
+            super(ActivatableQuerySet, self).delete()
         else:
-            return self.deactivate()
+            self.deactivate()
 
 
 class ActivatableManager(ManagerUtilsManager):
@@ -53,13 +56,6 @@ class BaseActivatableModel(models.Model):
 
     objects = ActivatableManager()
 
-    @staticmethod
-    def _get_activation_signal():
-        """
-        Returns the signal the concrete model should send when activation occurs.
-        """
-        raise NotImplementedError
-
     def save(self, *args, **kwargs):
         """
         A custom save method that handles figuring out when something is activated or deactivated.
@@ -73,12 +69,12 @@ class BaseActivatableModel(models.Model):
         if is_active_changed:
             model_activations_changed.send(self.__class__, instances=[self], is_active=self.is_active)
 
-    def delete(self, *args, **kwargs):
+    def delete(self, force=False, **kwargs):
         """
         It is impossible to delete an activatable model unless force is True. This function instead sets it to inactive.
         """
-        if kwargs.get('force'):
-            return super(BaseActivatableModel, self).delete(*args, **kwargs)
+        if force:
+            return super(BaseActivatableModel, self).delete(**kwargs)
         else:
             self.is_active = False
             self.save(update_fields=['is_active'])
@@ -91,15 +87,15 @@ def get_activatable_models():
     return [model for model in models.get_models() if issubclass(model, BaseActivatableModel)]
 
 
-@receiver(pre_syncdb, dispatch_uid='make_sure_activable_models_cannot_be_cascade_deleted')
-def make_sure_activable_models_cannot_be_cascade_deleted(*args, **kwargs):
+@receiver(pre_syncdb, dispatch_uid='make_sure_activatable_models_cannot_be_cascade_deleted')
+def make_sure_activatable_models_cannot_be_cascade_deleted(*args, **kwargs):
     """
     Raises a ValidationError for any ActivatableModel that has ForeignKeys or OneToOneFields that will
     cause cascading deletions to occur.
     """
     for model in get_activatable_models():
         for field in model._meta.fields:
-            if field.__class__ is models.ForeignKey or field.__class__ is models.OneToOneField:
+            if field.__class__ in (models.ForeignKey, models.OneToOneField):
                 # Ensure the on_delete method is not CASCADE
                 if field.rel.on_delete == models.CASCADE:
                     raise ValidationError((
