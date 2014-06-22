@@ -13,21 +13,19 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     Provides bulk activation/deactivation methods.
     """
     def update(self, *args, **kwargs):
-        super(ActivatableQuerySet, self).update(*args, **kwargs)
+        ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
         if 'is_active' in kwargs:
             model_activations_changed.send(self.model, instances=list(self), is_active=kwargs['is_active'])
+        return ret_val
 
     def activate(self):
-        self.update(is_active=True)
+        return self.update(is_active=True)
 
     def deactivate(self):
-        self.update(is_active=False)
+        return self.update(is_active=False)
 
     def delete(self, force=False):
-        if force:
-            super(ActivatableQuerySet, self).delete()
-        else:
-            self.deactivate()
+        return super(ActivatableQuerySet, self).delete() if force else self.deactivate()
 
 
 class ActivatableManager(ManagerUtilsManager):
@@ -60,11 +58,13 @@ class BaseActivatableModel(models.Model):
         is_active_changed = (
             self.id is None or self.__class__.objects.filter(id=self.id).exclude(is_active=self.is_active).exists())
 
-        super(BaseActivatableModel, self).save(*args, **kwargs)
+        ret_val = super(BaseActivatableModel, self).save(*args, **kwargs)
 
         # Emit the signal for when the is_active flag is changed
         if is_active_changed:
             model_activations_changed.send(self.__class__, instances=[self], is_active=self.is_active)
+
+        return ret_val
 
     def delete(self, force=False, **kwargs):
         """
@@ -74,7 +74,7 @@ class BaseActivatableModel(models.Model):
             return super(BaseActivatableModel, self).delete(**kwargs)
         else:
             self.is_active = False
-            self.save(update_fields=['is_active'])
+            return self.save(update_fields=['is_active'])
 
 
 def get_activatable_models():
