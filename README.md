@@ -27,7 +27,7 @@ class Account(BaseActivatableModel):
     group = models.ForeignKey(Group)
 ```
 
-By just inheriting ``BaseActivatableModel``, your model will have an ``is_active`` field that defaults to False. If you create an ``Account`` model, the ``model_activations_changed`` signal will be sent with and ``is_active`` keyword argument set to False and an ``instances`` keyword argument that is a list of the single created account. Similarly, if you updated the ``is_active`` flag at any time via the ``save`` method, the ``model_activations_changed`` signal will be emitted again. This allows the user to do things like this:
+By just inheriting ``BaseActivatableModel``, your model will have an ``is_active`` field that defaults to False. If you create an ``Account`` model, the ``model_activations_changed`` signal will be sent with an ``is_active`` keyword argument set to False and an ``instances`` keyword argument that is a list of the single created account. Similarly, if you updated the ``is_active`` flag at any time via the ``save`` method, the ``model_activations_changed`` signal will be emitted again. This allows the user to do things like this:
 
 ```python
 from django.dispatch import receiver
@@ -42,7 +42,7 @@ def do_something_on_deactivation(sender, instances, is_active, **kwargs):
 ```
 
 ## Activatable Model Deletion
-Django activatable model is an app that is specifically meant for those models in your app that should never be deleted but rather activated/deactivated instead. Given the assumption that activatable models should never be deleted, Django activatable model does some magic underneath to ensure your activatable models are properly updated when the user calls ``delete``. Instead of deleting the object(s) directly, the ``is_active`` flag is set to False and ``model_activations_changed`` is fired.
+Django activatable model is meant for models that should never be deleted but rather activated/deactivated instead. Given the assumption that activatable models should never be deleted, Django activatable model does some magic underneath to ensure your activatable models are properly updated when the user calls ``delete``. Instead of deleting the object(s) directly, the ``is_active`` flag is set to False and ``model_activations_changed`` is fired.
 
 ```python
 account = Account.objects.create(is_active=True)
@@ -61,7 +61,7 @@ The user can override this behavior by passing ``force=True`` to the model or qu
 
 Along with overriding deletion, Django activatable model also overrides cascade deletion. No model that inherits ``BaseActivatableModel`` can be cascade deleted by another model. This is accomplished by connecting to Django's ``pre_syncdb`` signal and verifying that all ``ForeignKey`` and ``OneToOneField`` fields of activatable models have their ``on_delete`` arguments set to something other than the default of ``models.CASCADE``.
 
-In fact, our previously show ``Account`` model will not pass validation. In order to make it validate properly on syncdb, it must do the following:
+In fact, our ``Account`` model will not pass validation. In order to make it validate properly on syncdb, it must do the following:
 
 ```python
 from django.db import models
