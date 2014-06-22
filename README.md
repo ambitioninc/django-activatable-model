@@ -4,7 +4,7 @@ Django Activatable Model
 Provides functionality for Django models that have active and inactive states. Features of this app are:
 
 1. An abstract BaseActivatableModel that provides an is_active flag
-1. A model_activations_changed signal that fires when model's is_active flags are changed or bulk updated
+1. A model_activations_changed signal that fires when models' is_active flags are changed or bulk updated
 1. Validation to ensure activatable models cannot be cascade deleted
 1. Overriding of delete methods so that is_active is set to False instead of the model(s) being deleted (unless force=True)
 1. Manager/QuerySet methods to activate and deactivate models
