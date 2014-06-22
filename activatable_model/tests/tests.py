@@ -57,6 +57,7 @@ class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], True)
         self.assertEquals(set(call_args[1]['instances']), set([m1, m2]))
+        self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
     def test_activate(self):
         G(ActivatableModel, is_active=False)
@@ -75,14 +76,14 @@ class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
     def test_delete_no_force(self):
         G(ActivatableModel, is_active=False)
         G(ActivatableModel, is_active=True)
-        ActivatableModel.objects.delete()
+        ActivatableModel.objects.all().delete()
         self.assertEquals(ActivatableModel.objects.filter(is_active=False).count(), 2)
         self.assertEquals(self.mock_model_activations_changed_handler.call_count, 3)
 
     def test_delete_w_force(self):
         G(ActivatableModel, is_active=False)
         G(ActivatableModel, is_active=True)
-        ActivatableModel.objects.delete(force=True)
+        ActivatableModel.objects.all().delete(force=True)
         self.assertFalse(ActivatableModel.objects.exists())
         self.assertEquals(self.mock_model_activations_changed_handler.call_count, 2)
 
@@ -96,6 +97,7 @@ class SaveTest(BaseMockActivationsSignalHanderTest):
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], False)
         self.assertEquals(call_args[1]['instances'], [m])
+        self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
     def test_save_not_changed(self):
         m = G(ActivatableModel, is_active=False)
@@ -113,6 +115,7 @@ class SaveTest(BaseMockActivationsSignalHanderTest):
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], True)
         self.assertEquals(call_args[1]['instances'], [m])
+        self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
 
 class SingleDeleteTest(BaseMockActivationsSignalHanderTest):

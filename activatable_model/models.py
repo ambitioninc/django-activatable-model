@@ -15,7 +15,7 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     def update(self, *args, **kwargs):
         super(ActivatableQuerySet, self).update(*args, **kwargs)
         if 'is_active' in kwargs:
-            model_activations_changed.send(self.model.__class__, instances=list(self), is_active=kwargs['is_active'])
+            model_activations_changed.send(self.model, instances=list(self), is_active=kwargs['is_active'])
 
     def activate(self):
         self.update(is_active=True)
@@ -39,9 +39,6 @@ class ActivatableManager(ManagerUtilsManager):
 
     def deactivate(self):
         return self.get_queryset().deactivate()
-
-    def delete(self, force=False):
-        return self.get_queryset().delete(force=force)
 
 
 class BaseActivatableModel(models.Model):
