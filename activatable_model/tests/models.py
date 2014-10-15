@@ -16,3 +16,9 @@ class Rel(models.Model):
 class ActivatableModelWRel(BaseActivatableModel):
     is_active = models.BooleanField(default=False)
     rel_field = models.ForeignKey(Rel, on_delete=models.PROTECT)
+
+
+class ActivatableModelWNonDefaultField(BaseActivatableModel):
+    ACTIVATABLE_FIELD_NAME = 'active'
+    active = models.BooleanField(default=False)
+    char_field = models.CharField(max_length=64)

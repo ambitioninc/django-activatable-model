@@ -14,15 +14,20 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     """
     def update(self, *args, **kwargs):
         ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
-        if 'is_active' in kwargs:
-            model_activations_changed.send(self.model, instances=list(self), is_active=kwargs['is_active'])
+        if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
+            model_activations_changed.send(
+                self.model, instances=list(self), is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
         return ret_val
 
     def activate(self):
-        return self.update(is_active=True)
+        return self.update(**{
+            self.model.ACTIVATABLE_FIELD_NAME: True
+        })
 
     def deactivate(self):
-        return self.update(is_active=False)
+        return self.update(**{
+            self.model.ACTIVATABLE_FIELD_NAME: False
+        })
 
     def delete(self, force=False):
         return super(ActivatableQuerySet, self).delete() if force else self.deactivate()
