@@ -167,6 +167,7 @@ class PreSyncdbTest(TestCase):
             class Meta:
                 abstract = True
 
+            is_active = models.BooleanField(default=False)
             ctype = models.ForeignKey(ContentType, null=True, on_delete=models.SET_NULL)
 
         mock_get_activatable_models.return_value = [CascadableModel]
@@ -184,6 +185,7 @@ class PreSyncdbTest(TestCase):
             class Meta:
                 abstract = True
 
+            is_active = models.BooleanField(default=False)
             ctype = models.ForeignKey(ContentType, null=True, on_delete=models.PROTECT)
 
         mock_get_activatable_models.return_value = [CascadableModel]
@@ -216,6 +218,7 @@ class PreSyncdbTest(TestCase):
             class Meta:
                 abstract = True
 
+            is_active = models.BooleanField(default=False)
             ctype = models.OneToOneField(ContentType, null=True, on_delete=models.SET_NULL)
 
         mock_get_activatable_models.return_value = [CascadableModel]
@@ -233,6 +236,7 @@ class PreSyncdbTest(TestCase):
             class Meta:
                 abstract = True
 
+            is_active = models.BooleanField(default=False)
             ctype = models.OneToOneField(ContentType, null=True, on_delete=models.PROTECT)
 
         mock_get_activatable_models.return_value = [CascadableModel]
@@ -248,6 +252,7 @@ class PreSyncdbTest(TestCase):
             class Meta:
                 abstract = True
 
+            is_active = models.BooleanField(default=False)
             ctype = models.OneToOneField(ContentType)
 
         mock_get_activatable_models.return_value = [CascadableModel]
