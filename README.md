@@ -3,10 +3,10 @@ Django Activatable Model
 ==================
 Provides functionality for Django models that have active and inactive states. Features of this app are:
 
-1. An abstract BaseActivatableModel that provides an is_active flag
-1. A model_activations_changed signal that fires when models' is_active flags are changed or bulk updated
+1. An abstract BaseActivatableModel that allows the user to specify an 'activatable' (i.e. Boolean) field
+1. A model_activations_changed signal that fires when models' activatable field are changed or bulk updated
 1. Validation to ensure activatable models cannot be cascade deleted
-1. Overriding of delete methods so that is_active is set to False instead of the model(s) being deleted (unless force=True)
+1. Overriding of delete methods so that the activatable flag is set to False instead of the model(s) being deleted (unless force=True)
 1. Manager/QuerySet methods to activate and deactivate models
 
 ## Installation
@@ -23,11 +23,12 @@ Assume you have a model called ``Account`` in your app, and it is an activatable
 from activatable_model import BaseActivatableModel
 
 class Account(BaseActivatableModel):
+    is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=64)
     group = models.ForeignKey(Group)
 ```
 
-By just inheriting ``BaseActivatableModel``, your model will have an ``is_active`` field that defaults to False. If you create an ``Account`` model, the ``model_activations_changed`` signal will be sent with an ``is_active`` keyword argument set to False and an ``instances`` keyword argument that is a list of the single created account. Similarly, if you updated the ``is_active`` flag at any time via the ``save`` method, the ``model_activations_changed`` signal will be emitted again. This allows the user to do things like this:
+By just inheriting ``BaseActivatableModel``, your model will need to define an ``is_active`` boolean field (this field name can be changed, more on that later). If you create an ``Account`` model, the ``model_activations_changed`` signal will be sent with an ``is_active`` keyword argument set to False and an ``instances`` keyword argument that is a list of the single created account. Similarly, if you updated the ``is_active`` flag at any time via the ``save`` method, the ``model_activations_changed`` signal will be emitted again. This allows the user to do things like this:
 
 ```python
 from django.dispatch import receiver
@@ -67,6 +68,7 @@ In fact, our ``Account`` model will not pass validation. In order to make it val
 from django.db import models
 
 class Account(BaseActivatableModel):
+    is_active = models.BooleanField(default=False)
     name = models.CharField(max_length=64)
     group = models.ForeignKey(Group, on_delete=models.PROTECT)
 ```
@@ -79,6 +81,24 @@ Django activatable models automatically use an ``ActivatableManager`` manager th
 1. Two methods - ``activate()`` and ``deactivate()`` that can be applied to a queryset
 1. Overriding the ``update()`` method so that it emits ``model_activations_changed`` when the ``is_active`` flag is updated
 1. Overriding the ``delete()`` method so that it calls ``deactivate()`` unless ``force=True``
+
+## Overriding the activatable field name
+The name of the activatable field can be overridden by defining the ``ACTIVATABLE_FIELD_NAME`` constant on the model to something else. By default, this constant is set to ``is_active``. An example is as follows:
+
+```python
+from activatable_model import BaseActivatableModel
+
+class Account(BaseActivatableModel):
+    ACTIVATABLE_FIELD_NAME = 'active'
+    active = models.BooleanField(default=False)
+```
+
+In the above example, the model instructs the activatable model app to use ``active`` as the activatable field on the model. If the user does not define a ``BooleanField`` on the model with the same name as ``ACTIVATABLE_FIELD_NAME``, a ``ValidationError`` is raised during syncdb / migrate.
+
+## Release Notes
+
+* 0.2.0
+    * When upgrading to this version, users will have to explicitly add the ``is_active`` field to any models that inherited ``BaseActivatableModel``. This field had a default value of False before, so be sure to add that as the default for the boolean field.
 
 ## License
 MIT License (see the LICENSE file in this repo)
