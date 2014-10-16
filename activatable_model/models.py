@@ -14,15 +14,20 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     """
     def update(self, *args, **kwargs):
         ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
-        if 'is_active' in kwargs:
-            model_activations_changed.send(self.model, instances=list(self), is_active=kwargs['is_active'])
+        if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
+            model_activations_changed.send(
+                self.model, instances=list(self), is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
         return ret_val
 
     def activate(self):
-        return self.update(is_active=True)
+        return self.update(**{
+            self.model.ACTIVATABLE_FIELD_NAME: True
+        })
 
     def deactivate(self):
-        return self.update(is_active=False)
+        return self.update(**{
+            self.model.ACTIVATABLE_FIELD_NAME: False
+        })
 
     def delete(self, force=False):
         return super(ActivatableQuerySet, self).delete() if force else self.deactivate()
@@ -46,8 +51,11 @@ class BaseActivatableModel(models.Model):
     class Meta:
         abstract = True
 
-    # Determines whether this object is active
-    is_active = models.BooleanField(default=False)
+    # The name of the Boolean field that determines if this model is active or inactive. A field
+    # must be defined with this name, and it must be a BooleanField. Note that the reason we don't
+    # define a BooleanField is because this would eliminate the ability for the user to easily
+    # define default values for the field and if it is indexed.
+    ACTIVATABLE_FIELD_NAME = 'is_active'
 
     objects = ActivatableManager()
 
@@ -56,13 +64,16 @@ class BaseActivatableModel(models.Model):
         A custom save method that handles figuring out when something is activated or deactivated.
         """
         is_active_changed = (
-            self.id is None or self.__class__.objects.filter(id=self.id).exclude(is_active=self.is_active).exists())
+            self.id is None or self.__class__.objects.filter(id=self.id).exclude(**{
+                self.ACTIVATABLE_FIELD_NAME: getattr(self, self.ACTIVATABLE_FIELD_NAME)
+            }).exists())
 
         ret_val = super(BaseActivatableModel, self).save(*args, **kwargs)
 
         # Emit the signal for when the is_active flag is changed
         if is_active_changed:
-            model_activations_changed.send(self.__class__, instances=[self], is_active=self.is_active)
+            model_activations_changed.send(
+                self.__class__, instances=[self], is_active=getattr(self, self.ACTIVATABLE_FIELD_NAME))
 
         return ret_val
 
@@ -73,8 +84,8 @@ class BaseActivatableModel(models.Model):
         if force:
             return super(BaseActivatableModel, self).delete(**kwargs)
         else:
-            self.is_active = False
-            return self.save(update_fields=['is_active'])
+            setattr(self, self.ACTIVATABLE_FIELD_NAME, False)
+            return self.save(update_fields=[self.ACTIVATABLE_FIELD_NAME])
 
 
 def get_activatable_models():
@@ -88,12 +99,25 @@ def get_activatable_models():
 def make_sure_activatable_models_cannot_be_cascade_deleted(*args, **kwargs):
     """
     Raises a ValidationError for any ActivatableModel that has ForeignKeys or OneToOneFields that will
-    cause cascading deletions to occur.
+    cause cascading deletions to occur. This function also raises a ValidationError if the activatable
+    model has not defined a Boolean field with the field name defined by the ACTIVATABLE_FIELD_NAME variable
+    on the model.
     """
     for model in get_activatable_models():
+        # Verify the activatable model has an activatable boolean field
+        activatable_field = next((
+            f for f in model._meta.fields
+            if f.__class__ == models.BooleanField and f.name == model.ACTIVATABLE_FIELD_NAME
+        ), None)
+        if activatable_field is None:
+            raise ValidationError((
+                'Model {0} is an activatable model. It must define an activatable BooleanField that '
+                'has a field name of model.ACTIVATABLE_FIELD_NAME (which defaults to is_active)'.format(model)
+            ))
+
+        # Ensure all foreign keys and onetoone fields will not result in cascade deletions
         for field in model._meta.fields:
             if field.__class__ in (models.ForeignKey, models.OneToOneField):
-                # Ensure the on_delete method is not CASCADE
                 if field.rel.on_delete == models.CASCADE:
                     raise ValidationError((
                         'Model {0} is an activatable model. All ForeignKey and OneToOneFields '
