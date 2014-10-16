@@ -166,6 +166,17 @@ class SaveTest(BaseMockActivationsSignalHanderTest):
         self.assertEquals(call_args[1]['instances'], [m])
         self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
+    def test_save_changed_custom(self):
+        m = G(ActivatableModelWNonDefaultField, active=False)
+        m.active = True
+        m.save()
+
+        self.assertEquals(self.mock_model_activations_changed_handler.call_count, 2)
+        call_args = self.mock_model_activations_changed_handler.call_args
+        self.assertEquals(call_args[1]['is_active'], True)
+        self.assertEquals(call_args[1]['instances'], [m])
+        self.assertEquals(call_args[1]['sender'], ActivatableModelWNonDefaultField)
+
 
 class SingleDeleteTest(BaseMockActivationsSignalHanderTest):
     """
@@ -205,6 +216,43 @@ class PreSyncdbTest(TestCase):
         Tests emitting the pre_syncdb signal. All models should validate fine.
         """
         pre_syncdb.send(sender=self)
+
+    @patch('activatable_model.models.get_activatable_models')
+    def test_activatable_field_is_not_boolean(self, mock_get_activatable_models):
+        """
+        SET_NULL is a valid option for foreign keys in activatable models.
+        """
+        # Make this an object and not an actual django model. This prevents it from always
+        # being included when syncing the db. This is true for all other test models in this file.
+        class NonBooleanModel(BaseActivatableModel):
+            class Meta:
+                abstract = True
+
+            is_active = models.CharField()
+            ctype = models.ForeignKey(ContentType, null=True, on_delete=models.SET_NULL)
+
+        mock_get_activatable_models.return_value = [NonBooleanModel]
+        with self.assertRaises(ValidationError):
+            pre_syncdb.send(sender=self)
+
+    @patch('activatable_model.models.get_activatable_models')
+    def test_activatable_field_is_not_defined(self, mock_get_activatable_models):
+        """
+        SET_NULL is a valid option for foreign keys in activatable models.
+        """
+        # Make this an object and not an actual django model. This prevents it from always
+        # being included when syncing the db. This is true for all other test models in this file.
+        class NoValidFieldModel(BaseActivatableModel):
+            class Meta:
+                abstract = True
+
+            ACTIVATABLE_FIELD_NAME = 'active'
+            is_active = models.BooleanField()
+            ctype = models.ForeignKey(ContentType, null=True, on_delete=models.SET_NULL)
+
+        mock_get_activatable_models.return_value = [NoValidFieldModel]
+        with self.assertRaises(ValidationError):
+            pre_syncdb.send(sender=self)
 
     @patch('activatable_model.models.get_activatable_models')
     def test_foreign_key_is_null(self, mock_get_activatable_models):
@@ -251,6 +299,7 @@ class PreSyncdbTest(TestCase):
             class Meta:
                 abstract = True
 
+            is_active = models.BooleanField(default=False)
             ctype = models.ForeignKey(ContentType)
 
         mock_get_activatable_models.return_value = [CascadableModel]
