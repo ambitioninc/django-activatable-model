@@ -95,9 +95,10 @@ class Account(BaseActivatableModel):
 
 In the above example, the model instructs the activatable model app to use ``active`` as the activatable field on the model. If the user does not define a ``BooleanField`` on the model with the same name as ``ACTIVATABLE_FIELD_NAME``, a ``ValidationError`` is raised during syncdb / migrate.
 
-## Notes
+## Release Notes
 
-The reason for not defining an ``is_active`` field directly on the abstract base model is to provide greater flexibility in allowing the user to specify properties of this field (such as default values, database indices, etc).
+* 0.2.0
+    * When upgrading to this version, users will have to explicitly add the ``is_active`` field to any models that inherited ``BaseActivatableModel``. This field had a default value of False before, so be sure to add that as the default for the boolean field.
 
 ## License
 MIT License (see the LICENSE file in this repo)
