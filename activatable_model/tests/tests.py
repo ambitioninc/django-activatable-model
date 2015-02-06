@@ -209,9 +209,9 @@ class ValidateDbTest(TestCase):
     """
     def get_validation_signal(self):
         if django.VERSION[1] <= 6:
-            from django.db.models.signals import pre_syncdb as validate_model_signal  # pragma nocover
+            from django.db.models.signals import pre_syncdb as validate_model_signal  # pragma: nocover
         else:
-            from django.db.models.signals import pre_migrate as validate_model_signal  # pragma nocover
+            from django.db.models.signals import pre_migrate as validate_model_signal  # pragma: nocover
         return validate_model_signal
             
 
