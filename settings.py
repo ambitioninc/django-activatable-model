@@ -1,5 +1,6 @@
 import os
 
+import django
 from django.conf import settings
 
 
@@ -41,10 +42,9 @@ def configure_settings():
                 'django.contrib.contenttypes',
                 'django.contrib.sessions',
                 'django.contrib.admin',
-                'south',
                 'activatable_model',
                 'activatable_model.tests',
-            ),
+            ) + (('south',) if django.VERSION[1] == 6 else ()),
             ROOT_URLCONF='activatable_model.urls',
             DEBUG=False,
         )
