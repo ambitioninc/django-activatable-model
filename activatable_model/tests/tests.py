@@ -2,7 +2,6 @@ import django
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_syncdb
 from django.test import TestCase, TransactionTestCase
 from django_dynamic_fixture import G
 from mock import patch, MagicMock
@@ -213,7 +212,6 @@ class ValidateDbTest(TestCase):
         else:
             from django.db.models.signals import pre_migrate as validate_model_signal  # pragma: nocover
         return validate_model_signal
-            
 
     def test_get_activatable_models(self):
         activatable_models = get_activatable_models()
