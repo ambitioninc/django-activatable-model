@@ -2,9 +2,9 @@ import django
 from django.core.exceptions import ValidationError
 from django.db import models
 if django.VERSION[1] <= 6:
-    from django.db.models.signals import pre_syncdb as model_check_signal  # noqa
+    from django.db.models.signals import pre_syncdb as model_check_signal  # pragma: no cover
 else:
-    from django.db.models.signals import pre_migrate as model_check_signal  # noqa
+    from django.db.models.signals import pre_migrate as model_check_signal  # pragma: no cover
 from django.dispatch import receiver
 
 from manager_utils import ManagerUtilsQuerySet, ManagerUtilsManager
