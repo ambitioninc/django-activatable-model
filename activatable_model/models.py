@@ -1,6 +1,10 @@
+import django
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_syncdb, pre_migrate
+if django.VERSION[1] <= 6:
+    from django.db.models.signals import pre_syncdb as model_check_signal  # noqa
+else:
+    from django.db.models.signals import pre_migrate as model_check_signal  # noqa
 from django.dispatch import receiver
 
 from manager_utils import ManagerUtilsQuerySet, ManagerUtilsManager
@@ -95,8 +99,7 @@ def get_activatable_models():
     return [model for model in models.get_models() if issubclass(model, BaseActivatableModel)]
 
 
-@receiver(pre_migrate, dispatch_uid='make_sure_activatable_models_cannot_be_cascade_deleted_pre_migrate')
-@receiver(pre_syncdb, dispatch_uid='make_sure_activatable_models_cannot_be_cascade_deleted_pre_syncdb')
+@receiver(model_check_signal, dispatch_uid='make_sure_activatable_models_cannot_be_cascade_deleted')
 def make_sure_activatable_models_cannot_be_cascade_deleted(*args, **kwargs):
     """
     Raises a ValidationError for any ActivatableModel that has ForeignKeys or OneToOneFields that will
