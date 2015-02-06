@@ -97,6 +97,9 @@ In the above example, the model instructs the activatable model app to use ``act
 
 ## Release Notes
 
+* 0.3.0
+    * Added Django 1.7 support and backwards compatibility with Django 1.6
+
 * 0.2.0
     * When upgrading to this version, users will have to explicitly add the ``is_active`` field to any models that inherited ``BaseActivatableModel``. This field had a default value of False before, so be sure to add that as the default for the boolean field.
 

@@ -1,7 +1,7 @@
+import django
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
-from django.db.models.signals import pre_syncdb
 from django.test import TestCase, TransactionTestCase
 from django_dynamic_fixture import G
 from mock import patch, MagicMock
@@ -202,10 +202,17 @@ class SingleDeleteTest(BaseMockActivationsSignalHanderTest):
         self.assertFalse(ActivatableModel.objects.exists())
 
 
-class PreSyncdbTest(TestCase):
+class ValidateDbTest(TestCase):
     """
     Tests that activatable models are validated properly upon pre_syncdb signal.
     """
+    def get_validation_signal(self):
+        if django.VERSION[1] <= 6:
+            from django.db.models.signals import pre_syncdb as validate_model_signal  # pragma: no cover
+        else:
+            from django.db.models.signals import pre_migrate as validate_model_signal  # pragma: no cover
+        return validate_model_signal
+
     def test_get_activatable_models(self):
         activatable_models = get_activatable_models()
         self.assertEquals(
@@ -215,7 +222,7 @@ class PreSyncdbTest(TestCase):
         """
         Tests emitting the pre_syncdb signal. All models should validate fine.
         """
-        pre_syncdb.send(sender=self)
+        self.get_validation_signal().send(sender=self)
 
     @patch('activatable_model.models.get_activatable_models')
     def test_activatable_field_is_not_boolean(self, mock_get_activatable_models):
@@ -233,7 +240,7 @@ class PreSyncdbTest(TestCase):
 
         mock_get_activatable_models.return_value = [NonBooleanModel]
         with self.assertRaises(ValidationError):
-            pre_syncdb.send(sender=self)
+            self.get_validation_signal().send(sender=self)
 
     @patch('activatable_model.models.get_activatable_models')
     def test_activatable_field_is_not_defined(self, mock_get_activatable_models):
@@ -252,7 +259,7 @@ class PreSyncdbTest(TestCase):
 
         mock_get_activatable_models.return_value = [NoValidFieldModel]
         with self.assertRaises(ValidationError):
-            pre_syncdb.send(sender=self)
+            self.get_validation_signal().send(sender=self)
 
     @patch('activatable_model.models.get_activatable_models')
     def test_foreign_key_is_null(self, mock_get_activatable_models):
@@ -269,7 +276,7 @@ class PreSyncdbTest(TestCase):
             ctype = models.ForeignKey(ContentType, null=True, on_delete=models.SET_NULL)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        pre_syncdb.send(sender=self)
+        self.get_validation_signal().send(sender=self)
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
     @patch('activatable_model.models.get_activatable_models')
@@ -287,7 +294,7 @@ class PreSyncdbTest(TestCase):
             ctype = models.ForeignKey(ContentType, null=True, on_delete=models.PROTECT)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        pre_syncdb.send(sender=self)
+        self.get_validation_signal().send(sender=self)
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
     @patch('activatable_model.models.get_activatable_models')
@@ -304,7 +311,7 @@ class PreSyncdbTest(TestCase):
 
         mock_get_activatable_models.return_value = [CascadableModel]
         with self.assertRaises(ValidationError):
-            pre_syncdb.send(sender=self)
+            self.get_validation_signal().send(sender=self)
 
     @patch('activatable_model.models.get_activatable_models')
     def test_one_to_one_is_null(self, mock_get_activatable_models):
@@ -321,7 +328,7 @@ class PreSyncdbTest(TestCase):
             ctype = models.OneToOneField(ContentType, null=True, on_delete=models.SET_NULL)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        pre_syncdb.send(sender=self)
+        self.get_validation_signal().send(sender=self)
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
     @patch('activatable_model.models.get_activatable_models')
@@ -339,7 +346,7 @@ class PreSyncdbTest(TestCase):
             ctype = models.OneToOneField(ContentType, null=True, on_delete=models.PROTECT)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        pre_syncdb.send(sender=self)
+        self.get_validation_signal().send(sender=self)
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
     @patch('activatable_model.models.get_activatable_models')
@@ -356,4 +363,4 @@ class PreSyncdbTest(TestCase):
 
         mock_get_activatable_models.return_value = [CascadableModel]
         with self.assertRaises(ValidationError):
-            pre_syncdb.send(sender=self)
+            self.get_validation_signal().send(sender=self)
