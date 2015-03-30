@@ -45,7 +45,7 @@ def configure_settings():
                 'django.contrib.admin',
                 'activatable_model',
                 'activatable_model.tests',
-            ) + (('south',) if django.VERSION[1] == 6 else ()),
+            ) + (('south',) if django.VERSION[1] <= 6 else ()),
             ROOT_URLCONF='activatable_model.urls',
             DEBUG=False,
         )
