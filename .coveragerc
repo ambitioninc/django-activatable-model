@@ -1,3 +1,11 @@
+[run]
+branch = True
+omit =
+    */migrations/*
+    */south_migrations/*
+    activatable_model/version.py
+    activatable_model/apps.py
+source = activatable_model
 [report]
 exclude_lines =
     # Have to re-enable the standard pragma
@@ -5,3 +13,5 @@ exclude_lines =
 
     # Don't complain if tests don't hit defensive assertion code:
     raise NotImplementedError
+fail_under = 100
+show_missing = 1
