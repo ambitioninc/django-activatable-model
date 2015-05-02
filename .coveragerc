@@ -2,7 +2,6 @@
 branch = True
 omit =
     */migrations/*
-    */south_migrations/*
     activatable_model/version.py
     activatable_model/apps.py
 source = activatable_model
