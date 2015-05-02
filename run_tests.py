@@ -5,7 +5,6 @@ import sys
 from optparse import OptionParser
 
 import django
-from django.conf import settings
 
 from settings import configure_settings
 
