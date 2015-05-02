@@ -1,4 +1,3 @@
-import django
 from django.contrib.contenttypes.models import ContentType
 from django.core.exceptions import ValidationError
 from django.db import models
@@ -7,7 +6,7 @@ from django_dynamic_fixture import G
 from mock import patch, MagicMock
 
 from activatable_model import BaseActivatableModel, model_activations_changed
-from activatable_model.models import get_activatable_models
+from activatable_model.validation import get_activatable_models, validate_activatable_models
 from activatable_model.tests.models import ActivatableModel, ActivatableModelWRel, Rel, ActivatableModelWNonDefaultField
 
 
@@ -206,13 +205,6 @@ class ValidateDbTest(TestCase):
     """
     Tests that activatable models are validated properly upon pre_syncdb signal.
     """
-    def get_validation_signal(self):
-        if django.VERSION[1] <= 6:
-            from django.db.models.signals import pre_syncdb as validate_model_signal  # pragma: no cover
-        else:
-            from django.db.models.signals import pre_migrate as validate_model_signal  # pragma: no cover
-        return validate_model_signal
-
     def test_get_activatable_models(self):
         activatable_models = get_activatable_models()
         self.assertEquals(
@@ -220,11 +212,11 @@ class ValidateDbTest(TestCase):
 
     def test_all_valid_models(self):
         """
-        Tests emitting the pre_syncdb signal. All models should validate fine.
+        All models should validate fine.
         """
-        self.get_validation_signal().send(sender=self)
+        validate_activatable_models()
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_activatable_field_is_not_boolean(self, mock_get_activatable_models):
         """
         SET_NULL is a valid option for foreign keys in activatable models.
@@ -240,9 +232,9 @@ class ValidateDbTest(TestCase):
 
         mock_get_activatable_models.return_value = [NonBooleanModel]
         with self.assertRaises(ValidationError):
-            self.get_validation_signal().send(sender=self)
+            validate_activatable_models()
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_activatable_field_is_not_defined(self, mock_get_activatable_models):
         """
         SET_NULL is a valid option for foreign keys in activatable models.
@@ -259,9 +251,9 @@ class ValidateDbTest(TestCase):
 
         mock_get_activatable_models.return_value = [NoValidFieldModel]
         with self.assertRaises(ValidationError):
-            self.get_validation_signal().send(sender=self)
+            validate_activatable_models()
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_foreign_key_is_null(self, mock_get_activatable_models):
         """
         SET_NULL is a valid option for foreign keys in activatable models.
@@ -276,10 +268,10 @@ class ValidateDbTest(TestCase):
             ctype = models.ForeignKey(ContentType, null=True, on_delete=models.SET_NULL)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        self.get_validation_signal().send(sender=self)
+        validate_activatable_models()
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_foreign_key_protect(self, mock_get_activatable_models):
         """
         PROTECT is a valid option for foreign keys in activatable models.
@@ -294,10 +286,10 @@ class ValidateDbTest(TestCase):
             ctype = models.ForeignKey(ContentType, null=True, on_delete=models.PROTECT)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        self.get_validation_signal().send(sender=self)
+        validate_activatable_models()
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_foreign_key_cascade(self, mock_get_activatable_models):
         """
         The default cascade behavior is invalid for activatable models.
@@ -311,9 +303,9 @@ class ValidateDbTest(TestCase):
 
         mock_get_activatable_models.return_value = [CascadableModel]
         with self.assertRaises(ValidationError):
-            self.get_validation_signal().send(sender=self)
+            validate_activatable_models()
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_one_to_one_is_null(self, mock_get_activatable_models):
         """
         SET_NULL is a valid option for foreign keys in activatable models.
@@ -328,10 +320,10 @@ class ValidateDbTest(TestCase):
             ctype = models.OneToOneField(ContentType, null=True, on_delete=models.SET_NULL)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        self.get_validation_signal().send(sender=self)
+        validate_activatable_models()
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_one_to_one_protect(self, mock_get_activatable_models):
         """
         PROTECT is a valid option for foreign keys in activatable models.
@@ -346,10 +338,10 @@ class ValidateDbTest(TestCase):
             ctype = models.OneToOneField(ContentType, null=True, on_delete=models.PROTECT)
 
         mock_get_activatable_models.return_value = [CascadableModel]
-        self.get_validation_signal().send(sender=self)
+        validate_activatable_models()
         self.assertEquals(mock_get_activatable_models.call_count, 1)
 
-    @patch('activatable_model.models.get_activatable_models')
+    @patch('activatable_model.validation.get_activatable_models')
     def test_one_to_one_cascade(self, mock_get_activatable_models):
         """
         The default cascade behavior is invalid for activatable models.
@@ -363,4 +355,4 @@ class ValidateDbTest(TestCase):
 
         mock_get_activatable_models.return_value = [CascadableModel]
         with self.assertRaises(ValidationError):
-            self.get_validation_signal().send(sender=self)
+            validate_activatable_models()
