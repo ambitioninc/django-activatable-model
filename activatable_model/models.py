@@ -1,11 +1,4 @@
-import django
-from django.core.exceptions import ValidationError
 from django.db import models
-if django.VERSION[1] <= 6:
-    from django.db.models.signals import pre_syncdb as model_check_signal  # pragma: no cover
-else:
-    from django.db.models.signals import pre_migrate as model_check_signal  # pragma: no cover
-from django.dispatch import receiver
 
 from manager_utils import ManagerUtilsQuerySet, ManagerUtilsManager
 
@@ -90,40 +83,3 @@ class BaseActivatableModel(models.Model):
         else:
             setattr(self, self.ACTIVATABLE_FIELD_NAME, False)
             return self.save(update_fields=[self.ACTIVATABLE_FIELD_NAME])
-
-
-def get_activatable_models():
-    """
-    Gets all models in a project that inherit BaseActivatableModel
-    """
-    return [model for model in models.get_models() if issubclass(model, BaseActivatableModel)]
-
-
-@receiver(model_check_signal, dispatch_uid='make_sure_activatable_models_cannot_be_cascade_deleted')
-def make_sure_activatable_models_cannot_be_cascade_deleted(*args, **kwargs):
-    """
-    Raises a ValidationError for any ActivatableModel that has ForeignKeys or OneToOneFields that will
-    cause cascading deletions to occur. This function also raises a ValidationError if the activatable
-    model has not defined a Boolean field with the field name defined by the ACTIVATABLE_FIELD_NAME variable
-    on the model.
-    """
-    for model in get_activatable_models():
-        # Verify the activatable model has an activatable boolean field
-        activatable_field = next((
-            f for f in model._meta.fields
-            if f.__class__ == models.BooleanField and f.name == model.ACTIVATABLE_FIELD_NAME
-        ), None)
-        if activatable_field is None:
-            raise ValidationError((
-                'Model {0} is an activatable model. It must define an activatable BooleanField that '
-                'has a field name of model.ACTIVATABLE_FIELD_NAME (which defaults to is_active)'.format(model)
-            ))
-
-        # Ensure all foreign keys and onetoone fields will not result in cascade deletions
-        for field in model._meta.fields:
-            if field.__class__ in (models.ForeignKey, models.OneToOneField):
-                if field.rel.on_delete == models.CASCADE:
-                    raise ValidationError((
-                        'Model {0} is an activatable model. All ForeignKey and OneToOneFields '
-                        'must set on_delete methods to something other than CASCADE (the default)'.format(model)
-                    ))
