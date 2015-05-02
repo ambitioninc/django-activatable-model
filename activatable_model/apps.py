@@ -6,5 +6,5 @@ class ActivatableModelConfig(AppConfig):
     verbose_name = 'Django Activatable Model'
 
     def ready(self):
-        from activatable_model.activatable_model_validation import validate_activatable_models
+        from activatable_model.validation import validate_activatable_models
         validate_activatable_models()
