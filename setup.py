@@ -41,7 +41,7 @@ setup(
     license='MIT',
     install_requires=[
         'django>=1.7',
-        'django-manager-utils>=0.8.0',
+        'django-manager-utils>=0.8.2',
     ],
     tests_require=[
         'psycopg2',
