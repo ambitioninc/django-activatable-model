@@ -11,11 +11,18 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     """
     def update(self, *args, **kwargs):
         if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
-            updated_instances = list(self)
+            # Fetch the instances that are about to be updated if they have an activatable flag. This
+            # is because their activatable flag may be changed in the subsequent update, causing us
+            # to potentially lose what this original query referenced
+            updated_instance_ids = list(self.values_list('id', flat=True))
+
         ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
+
         if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
+            # Refetch the instances that were updated and send them to the activation signal
             model_activations_changed.send(
-                self.model, instances=updated_instances, is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
+                self.model, instance_ids=updated_instance_ids,
+                is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
         return ret_val
 
     def activate(self):
@@ -72,7 +79,7 @@ class BaseActivatableModel(models.Model):
         # Emit the signal for when the is_active flag is changed
         if is_active_changed:
             model_activations_changed.send(
-                self.__class__, instances=[self], is_active=getattr(self, self.ACTIVATABLE_FIELD_NAME))
+                self.__class__, instance_ids=[self.id], is_active=getattr(self, self.ACTIVATABLE_FIELD_NAME))
 
         return ret_val
 
