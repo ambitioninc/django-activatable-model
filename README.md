@@ -134,6 +134,8 @@ In the above example, the model instructs the activatable model app to use
 `ValidationError` is raised during syncdb / migrate.
 
 ## Release Notes
+* 0.5.1
+    * Optimize individual saves so that they dont perform an additional query when checking if model activations have been updated
 * 0.5.0
     * Changed the signal to send instance_ids as a keyword argument rather than the instances. This pushes fetching the updated models in signal handlers onto the application
 * 0.4.2
