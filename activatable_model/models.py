@@ -18,7 +18,7 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
 
         ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
 
-        if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
+        if self.model.ACTIVATABLE_FIELD_NAME in kwargs and updated_instance_ids:
             # Refetch the instances that were updated and send them to the activation signal
             model_activations_changed.send(
                 self.model, instance_ids=updated_instance_ids,
@@ -65,21 +65,28 @@ class BaseActivatableModel(models.Model):
 
     objects = ActivatableManager()
 
+    # The original activatable field value, for determining when it changes
+    __original_activatable_value = None
+
+    def __init__(self, *args, **kwargs):
+        super(BaseActivatableModel, self).__init__(*args, **kwargs)
+
+        # Keep track of the original activatable value to know when it changes
+        self.__original_activatable_value = getattr(self, self.ACTIVATABLE_FIELD_NAME)
+
     def save(self, *args, **kwargs):
         """
         A custom save method that handles figuring out when something is activated or deactivated.
         """
-        is_active_changed = (
-            self.id is None or self.__class__.objects.filter(id=self.id).exclude(**{
-                self.ACTIVATABLE_FIELD_NAME: getattr(self, self.ACTIVATABLE_FIELD_NAME)
-            }).exists())
+        current_activable_value = getattr(self, self.ACTIVATABLE_FIELD_NAME)
+        is_active_changed = self.id is None or self.__original_activatable_value != current_activable_value
+        self.__original_activatable_value = current_activable_value
 
         ret_val = super(BaseActivatableModel, self).save(*args, **kwargs)
 
         # Emit the signal for when the is_active flag is changed
         if is_active_changed:
-            model_activations_changed.send(
-                self.__class__, instance_ids=[self.id], is_active=getattr(self, self.ACTIVATABLE_FIELD_NAME))
+            model_activations_changed.send(self.__class__, instance_ids=[self.id], is_active=current_activable_value)
 
         return ret_val
 
