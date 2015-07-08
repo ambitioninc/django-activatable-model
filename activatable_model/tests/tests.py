@@ -58,7 +58,7 @@ class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
     def test_update_w_is_active(self):
         m1 = G(ActivatableModel, is_active=False)
         m2 = G(ActivatableModel, is_active=False)
-        ActivatableModel.objects.update(char_field='hi', is_active=True)
+        ActivatableModel.objects.filter(is_active=False).update(char_field='hi', is_active=True)
         self.assertEquals(ActivatableModel.objects.filter(char_field='hi', is_active=True).count(), 2)
         self.assertEquals(self.mock_model_activations_changed_handler.call_count, 3)
 
