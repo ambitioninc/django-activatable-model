@@ -38,8 +38,8 @@ class Account(BaseActivatableModel):
 By just inheriting `BaseActivatableModel`, your model will need to define an 
 `is_active` boolean field (this field name can be changed, more on that later).
 If you create an `Account` model, the `model_activations_changed` signal will 
-be sent with an `is_active` keyword argument set to False and an `instances` 
-keyword argument that is a list of the single created account. Similarly, if 
+be sent with an `is_active` keyword argument set to False and an `instance_ids` 
+keyword argument that is a list of the single created account id. Similarly, if 
 you updated the `is_active` flag at any time via the `.save()` method, the 
 `model_activations_changed` signal will be emitted again. This allows the user 
 to do things like this:
@@ -49,10 +49,10 @@ from django.dispatch import receiver
 from activatable_model import model_activations_changed
 
 @receiver(model_activations_changed, sender=Account)
-def do_something_on_deactivation(sender, instances, is_active, **kwargs):
+def do_something_on_deactivation(sender, instance_ids, is_active, **kwargs):
     if not is_active:
         # Either an account was deactivated or an inactive account was created...
-        for account in instances:
+        for account in Account.objects.filter(id__in=instance_ids):
             # Do something with every deactivated account
 ```
 
@@ -134,6 +134,8 @@ In the above example, the model instructs the activatable model app to use
 `ValidationError` is raised during syncdb / migrate.
 
 ## Release Notes
+* 0.5.0
+    * Changed the signal to send instance_ids as a keyword argument rather than the instances. This pushes fetching the updated models in signal handlers onto the application
 * 0.4.2
     * Fixed bug when activating a queryset that was filtered by the active flag
 * 0.3.1

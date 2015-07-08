@@ -64,7 +64,7 @@ class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
 
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], True)
-        self.assertEquals(set(call_args[1]['instances']), set([m1, m2]))
+        self.assertEquals(set(call_args[1]['instance_ids']), set([m1.id, m2.id]))
         self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
     def test_update_w_is_active_custom(self):
@@ -76,7 +76,7 @@ class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
 
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], True)
-        self.assertEquals(set(call_args[1]['instances']), set([m1, m2]))
+        self.assertEquals(set(call_args[1]['instance_ids']), set([m1.id, m2.id]))
         self.assertEquals(call_args[1]['sender'], ActivatableModelWNonDefaultField)
 
     def test_activate(self):
@@ -144,7 +144,7 @@ class SaveTest(BaseMockActivationsSignalHanderTest):
         m = G(ActivatableModel, is_active=False)
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], False)
-        self.assertEquals(call_args[1]['instances'], [m])
+        self.assertEquals(call_args[1]['instance_ids'], [m.id])
         self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
     def test_save_not_changed(self):
@@ -162,7 +162,7 @@ class SaveTest(BaseMockActivationsSignalHanderTest):
         self.assertEquals(self.mock_model_activations_changed_handler.call_count, 2)
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], True)
-        self.assertEquals(call_args[1]['instances'], [m])
+        self.assertEquals(call_args[1]['instance_ids'], [m.id])
         self.assertEquals(call_args[1]['sender'], ActivatableModel)
 
     def test_save_changed_custom(self):
@@ -173,7 +173,7 @@ class SaveTest(BaseMockActivationsSignalHanderTest):
         self.assertEquals(self.mock_model_activations_changed_handler.call_count, 2)
         call_args = self.mock_model_activations_changed_handler.call_args
         self.assertEquals(call_args[1]['is_active'], True)
-        self.assertEquals(call_args[1]['instances'], [m])
+        self.assertEquals(call_args[1]['instance_ids'], [m.id])
         self.assertEquals(call_args[1]['sender'], ActivatableModelWNonDefaultField)
 
 
