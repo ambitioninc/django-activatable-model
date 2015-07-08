@@ -134,6 +134,8 @@ In the above example, the model instructs the activatable model app to use
 `ValidationError` is raised during syncdb / migrate.
 
 ## Release Notes
+* 0.4.2
+    * Fixed bug when activating a queryset that was filtered by the active flag
 * 0.3.1
     * Added Django 1.7 app config
 * 0.3.0
