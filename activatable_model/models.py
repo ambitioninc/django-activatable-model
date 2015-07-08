@@ -10,10 +10,12 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
     Provides bulk activation/deactivation methods.
     """
     def update(self, *args, **kwargs):
+        if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
+            updated_instances = list(self)
         ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
         if self.model.ACTIVATABLE_FIELD_NAME in kwargs:
             model_activations_changed.send(
-                self.model, instances=list(self), is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
+                self.model, instances=updated_instances, is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
         return ret_val
 
     def activate(self):
