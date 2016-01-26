@@ -2,7 +2,7 @@ from django.db import models
 
 from manager_utils import ManagerUtilsQuerySet, ManagerUtilsManager
 
-from activatable_model.signals import model_activations_changed
+from activatable_model.signals import model_activations_changed, model_activations_updated
 
 
 class ActivatableQuerySet(ManagerUtilsQuerySet):
@@ -14,13 +14,20 @@ class ActivatableQuerySet(ManagerUtilsQuerySet):
             # Fetch the instances that are about to be updated if they have an activatable flag. This
             # is because their activatable flag may be changed in the subsequent update, causing us
             # to potentially lose what this original query referenced
+            new_active_state_kwargs = {
+                self.model.ACTIVATABLE_FIELD_NAME: kwargs.get(self.model.ACTIVATABLE_FIELD_NAME)
+            }
+            changed_instance_ids = list(self.exclude(**new_active_state_kwargs).values_list('id', flat=True))
             updated_instance_ids = list(self.values_list('id', flat=True))
 
         ret_val = super(ActivatableQuerySet, self).update(*args, **kwargs)
 
         if self.model.ACTIVATABLE_FIELD_NAME in kwargs and updated_instance_ids:
-            # Refetch the instances that were updated and send them to the activation signal
+            # send the instances that were updated to the activation signals
             model_activations_changed.send(
+                self.model, instance_ids=changed_instance_ids,
+                is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
+            model_activations_updated.send(
                 self.model, instance_ids=updated_instance_ids,
                 is_active=kwargs[self.model.ACTIVATABLE_FIELD_NAME])
         return ret_val
@@ -71,8 +78,16 @@ class BaseActivatableModel(models.Model):
     def __init__(self, *args, **kwargs):
         super(BaseActivatableModel, self).__init__(*args, **kwargs)
 
+        # Keep track of the updated status of the activatable field
+        self.activatable_field_updated = self.id is None
+
         # Keep track of the original activatable value to know when it changes
         self.__original_activatable_value = getattr(self, self.ACTIVATABLE_FIELD_NAME)
+
+    def __setattr__(self, key, value):
+        if key == self.ACTIVATABLE_FIELD_NAME:
+            self.activatable_field_updated = True
+        return super(BaseActivatableModel, self).__setattr__(key, value)
 
     def save(self, *args, **kwargs):
         """
@@ -84,9 +99,11 @@ class BaseActivatableModel(models.Model):
 
         ret_val = super(BaseActivatableModel, self).save(*args, **kwargs)
 
-        # Emit the signal for when the is_active flag is changed
+        # Emit the signals for when the is_active flag is changed
         if is_active_changed:
             model_activations_changed.send(self.__class__, instance_ids=[self.id], is_active=current_activable_value)
+        if self.activatable_field_updated:
+            model_activations_updated.send(self.__class__, instance_ids=[self.id], is_active=current_activable_value)
 
         return ret_val
 
