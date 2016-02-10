@@ -5,19 +5,20 @@ import sys
 from optparse import OptionParser
 
 import django
-
 from settings import configure_settings
 
 
 # Configure the default settings
 configure_settings()
-django.setup()
+
 
 # Django nose must be imported here since it depends on the settings being configured
 from django_nose import NoseTestSuiteRunner
 
 
 def run_tests(*test_args, **kwargs):
+    django.setup()
+
     if not test_args:
         test_args = ['activatable_model']
 
