@@ -37,6 +37,7 @@ setup(
         'Framework :: Django',
         'Framework :: Django :: 1.7',
         'Framework :: Django :: 1.8',
+        'Framework :: Django :: 1.9',
     ],
     license='MIT',
     install_requires=[
