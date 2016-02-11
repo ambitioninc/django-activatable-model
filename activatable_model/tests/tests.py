@@ -5,9 +5,8 @@ from django.test import TestCase, TransactionTestCase
 from django_dynamic_fixture import G
 from mock import patch, MagicMock, call
 
-from activatable_model import (
-    BaseActivatableModel, model_activations_changed, model_activations_updated,
-)
+from activatable_model.models import BaseActivatableModel
+from activatable_model.signals import model_activations_changed, model_activations_updated
 from activatable_model.validation import get_activatable_models, validate_activatable_models
 from activatable_model.tests.models import ActivatableModel, ActivatableModelWRel, Rel, ActivatableModelWNonDefaultField
 
