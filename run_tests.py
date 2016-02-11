@@ -3,8 +3,6 @@ Provides the ability to run test on a standalone Django app.
 """
 import sys
 from optparse import OptionParser
-
-import django
 from settings import configure_settings
 
 
@@ -17,8 +15,6 @@ from django_nose import NoseTestSuiteRunner
 
 
 def run_tests(*test_args, **kwargs):
-    django.setup()
-
     if not test_args:
         test_args = ['activatable_model']
 

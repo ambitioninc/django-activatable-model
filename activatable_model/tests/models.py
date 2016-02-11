@@ -1,6 +1,6 @@
 from django.db import models
 
-from activatable_model import BaseActivatableModel
+from activatable_model.models import BaseActivatableModel
 
 
 class ActivatableModel(BaseActivatableModel):
