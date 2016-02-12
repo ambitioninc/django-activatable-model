@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v0.7.1
+------
+* Added Django 1.7 support back
+
 v0.7.0
 ------
 * Added support for Django 1.9 and dropped support for Django 1.7
