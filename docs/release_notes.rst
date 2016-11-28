@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v0.7.2
+------
+* Republishing to test a pypi issue
+
 v0.7.1
 ------
 * Added Django 1.7 support back
