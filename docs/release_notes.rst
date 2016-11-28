@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v0.7.3
+------
+* Add python 3.5 support, drop django 1.7 support
+
 v0.7.2
 ------
 * Republishing to test a pypi issue
