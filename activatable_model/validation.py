@@ -30,11 +30,12 @@ def validate_activatable_models():
                 'has a field name of model.ACTIVATABLE_FIELD_NAME (which defaults to is_active)'.format(model)
             ))
 
-        # Ensure all foreign keys and onetoone fields will not result in cascade deletions
-        for field in model._meta.fields:
-            if field.__class__ in (models.ForeignKey, models.OneToOneField):
-                if field.rel.on_delete == models.CASCADE:
-                    raise ValidationError((
-                        'Model {0} is an activatable model. All ForeignKey and OneToOneFields '
-                        'must set on_delete methods to something other than CASCADE (the default)'.format(model)
-                    ))
+        # Ensure all foreign keys and onetoone fields will not result in cascade deletions if not cascade deletable
+        if not model.ALLOW_CASCADE_DELETE:
+            for field in model._meta.fields:
+                if field.__class__ in (models.ForeignKey, models.OneToOneField):
+                    if field.rel.on_delete == models.CASCADE:
+                        raise ValidationError((
+                            'Model {0} is an activatable model. All ForeignKey and OneToOneFields '
+                            'must set on_delete methods to something other than CASCADE (the default)'.format(model)
+                        ))
