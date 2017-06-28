@@ -37,5 +37,7 @@ def validate_activatable_models():
                     if field.rel.on_delete == models.CASCADE:
                         raise ValidationError((
                             'Model {0} is an activatable model. All ForeignKey and OneToOneFields '
-                            'must set on_delete methods to something other than CASCADE (the default)'.format(model)
-                        ))
+                            'must set on_delete methods to something other than CASCADE (the default). '
+                            'If you want to explicitely allow cascade deletes, then you must set the '
+                            'ALLOW_CASCADE_DELETE=True class variable on your model.'
+                        ).format(model))
