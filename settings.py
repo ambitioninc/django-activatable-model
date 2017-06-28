@@ -19,7 +19,7 @@ from django.conf import settings
 #                 'CHARSET': 'UTF8',
 #             }
 #         }
-# 
+#
 #         travis_ci = os.environ.get('TRAVIS_CI', None)
 #         if travis_ci:
 #             test_db = os.environ.get('DB', None)
@@ -44,7 +44,7 @@ from django.conf import settings
 #                 }
 #             else:
 #                 raise RuntimeError('Unsupported test DB {0}'.format(test_db))
-# 
+#
 #             db_config.update(
 #                 {
 #                     'ENGINE': 'django.db.backends.postgresql_psycopg2',
@@ -54,7 +54,7 @@ from django.conf import settings
 #                     'HOST': 'localhost'
 #                 }
 #             )
-# 
+#
 #         settings.configure(
 #             TEST_RUNNER='django_nose.NoseTestSuiteRunner',
 #             NOSE_ARGS=['--nocapture', '--nologcapture', '--verbosity=1'],
@@ -73,7 +73,6 @@ from django.conf import settings
 #             ROOT_URLCONF='activatable_model.urls',
 #             DEBUG=False,
 #         )
-
 
 
 def configure_settings():
