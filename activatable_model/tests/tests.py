@@ -45,9 +45,10 @@ class CascadeTest(TransactionTestCase):
 
     def test_allowed_cascade(self):
         rel = G(Rel)
+        rel_id = rel.id
         G(ActivatableModelWRelAndCascade, rel_field=rel)
-        with self.assertRaises(models.ProtectedError):
-            rel.delete()
+        rel.delete()
+        self.assertEqual(ActivatableModelWRelAndCascade.objects.filter(id=rel_id).count(), 0)
 
 
 class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
@@ -308,7 +309,16 @@ class ValidateDbTest(TestCase):
     def test_get_activatable_models(self):
         activatable_models = get_activatable_models()
         self.assertEquals(
-            set([ActivatableModel, ActivatableModelWRel, ActivatableModelWNonDefaultField]), set(activatable_models))
+            set(
+                [
+                    ActivatableModel,
+                    ActivatableModelWRel,
+                    ActivatableModelWRelAndCascade,
+                    ActivatableModelWNonDefaultField
+                ]
+            ),
+            set(activatable_models)
+        )
 
     def test_all_valid_models(self):
         """

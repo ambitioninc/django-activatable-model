@@ -17,6 +17,14 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'.format(VERSION_FILE))
 
 
+tests_require = [
+    'coverage',
+    'psycopg2',
+    'django-dynamic-fixture',
+    'django-nose>=1.4',
+    'mock',
+]
+
 setup(
     name='django-activatable-model',
     version=get_version(),
@@ -45,12 +53,8 @@ setup(
         'django>=1.7',
         'django-manager-utils>=0.9.1',
     ],
-    tests_require=[
-        'psycopg2',
-        'django-dynamic-fixture',
-        'django-nose>=1.4',
-        'mock',
-    ],
+    tests_require=tests_require,
+    extras_require={'dev': tests_require},
     test_suite='run_tests.run_tests',
     include_package_data=True,
     zip_safe=False,
