@@ -13,10 +13,13 @@ def configure_settings():
         if test_db is None:
             db_config = {
                 'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                'NAME': 'ambition_dev',
-                'USER': 'ambition_dev',
-                'PASSWORD': 'ambition_dev',
-                'HOST': 'localhost'
+                'NAME': 'ambition_test',
+                'USER': 'postgres',
+                'PASSWORD': '',
+                'HOST': 'db',
+                'TEST': {
+                    'CHARSET': 'UTF8',
+                }
             }
         elif test_db == 'postgres':
             db_config = {
@@ -31,6 +34,16 @@ def configure_settings():
             }
         else:
             raise RuntimeError('Unsupported test DB {0}'.format(test_db))
+
+        travis_ci = os.environ.get('TRAVIS_CI', None)
+        if travis_ci:
+            db_config.update(
+                {
+                    'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                    'USER': 'postgres',
+                    'NAME': 'activatable_model',
+                }
+            )
 
         settings.configure(
             TEST_RUNNER='django_nose.NoseTestSuiteRunner',

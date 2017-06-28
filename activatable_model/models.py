@@ -70,6 +70,11 @@ class BaseActivatableModel(models.Model):
     # define default values for the field and if it is indexed.
     ACTIVATABLE_FIELD_NAME = 'is_active'
 
+    # There are situations where you might actually want other models to be able to force-delete
+    # you ActivatibleModel.  In this case, no special delete action is taken and you model will
+    # be removed from the database.  To enable this behavior, set ALLOW_CASCADE_DELETE to True
+    ALLOW_CASCADE_DELETE = False
+
     objects = ActivatableManager()
 
     # The original activatable field value, for determining when it changes

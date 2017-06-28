@@ -8,7 +8,13 @@ from mock import patch, MagicMock, call
 from activatable_model.models import BaseActivatableModel
 from activatable_model.signals import model_activations_changed, model_activations_updated
 from activatable_model.validation import get_activatable_models, validate_activatable_models
-from activatable_model.tests.models import ActivatableModel, ActivatableModelWRel, Rel, ActivatableModelWNonDefaultField
+from activatable_model.tests.models import (
+    ActivatableModel,
+    ActivatableModelWRel,
+    Rel,
+    ActivatableModelWNonDefaultField,
+    ActivatableModelWRelAndCascade,
+)
 
 
 class BaseMockActivationsSignalHanderTest(TestCase):
@@ -27,7 +33,7 @@ class BaseMockActivationsSignalHanderTest(TestCase):
         model_activations_changed.disconnect(self.mock_model_activations_changed_handler)
 
 
-class NoCascadeTest(TransactionTestCase):
+class CascadeTest(TransactionTestCase):
     """
     Tests that cascade deletes cant happen on an activatable test model.
     """
@@ -36,6 +42,13 @@ class NoCascadeTest(TransactionTestCase):
         G(ActivatableModelWRel, rel_field=rel)
         with self.assertRaises(models.ProtectedError):
             rel.delete()
+
+    def test_allowed_cascade(self):
+        rel = G(Rel)
+        rel_id = rel.id
+        G(ActivatableModelWRelAndCascade, rel_field=rel)
+        rel.delete()
+        self.assertEqual(ActivatableModelWRelAndCascade.objects.filter(id=rel_id).count(), 0)
 
 
 class ManagerQuerySetTest(BaseMockActivationsSignalHanderTest):
@@ -296,7 +309,16 @@ class ValidateDbTest(TestCase):
     def test_get_activatable_models(self):
         activatable_models = get_activatable_models()
         self.assertEquals(
-            set([ActivatableModel, ActivatableModelWRel, ActivatableModelWNonDefaultField]), set(activatable_models))
+            set(
+                [
+                    ActivatableModel,
+                    ActivatableModelWRel,
+                    ActivatableModelWRelAndCascade,
+                    ActivatableModelWNonDefaultField
+                ]
+            ),
+            set(activatable_models)
+        )
 
     def test_all_valid_models(self):
         """
