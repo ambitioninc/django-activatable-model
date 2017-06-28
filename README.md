@@ -103,6 +103,14 @@ This will ensure a `ProtectedError` is thrown every time a Group is deleted.
 For other options on foreign key deletion behavior, see 
 [Django's docs](https://docs.djangoproject.com/en/1.7/ref/models/fields/#django.db.models.ForeignKey.on_delete).
 
+### Cascade Overrides (new in version 0.8.0 )
+As mentioned above, activatable models cannot be cascade deleted.  However,
+this default behavior can be overridden by setting the the class variable,
+`ALLOW_CASCADE_DELETE = True`.  If set to True, than cascade deletion will
+be allowed.  Note however, that this will be a hard delete, meaning that
+cascade deletion will completely remove your record from the database rather
+than applying the ActivatibleModel magic of simply marking it as inactive.
+
 ## Manager and QuerySet methods
 Django activatable models automatically use an `ActivatableManager` manager
 that uses an `ActivatableQuerySet` queryset. This provides the following 
