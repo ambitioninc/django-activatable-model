@@ -8,7 +8,13 @@ from mock import patch, MagicMock, call
 from activatable_model.models import BaseActivatableModel
 from activatable_model.signals import model_activations_changed, model_activations_updated
 from activatable_model.validation import get_activatable_models, validate_activatable_models
-from activatable_model.tests.models import ActivatableModel, ActivatableModelWRel, Rel, ActivatableModelWNonDefaultField
+from activatable_model.tests.models import (
+    ActivatableModel,
+    ActivatableModelWRel,
+    Rel,
+    ActivatableModelWNonDefaultField,
+    ActivatableModelWRelAndCascade,
+)
 
 
 class BaseMockActivationsSignalHanderTest(TestCase):
@@ -27,13 +33,19 @@ class BaseMockActivationsSignalHanderTest(TestCase):
         model_activations_changed.disconnect(self.mock_model_activations_changed_handler)
 
 
-class NoCascadeTest(TransactionTestCase):
+class CascadeTest(TransactionTestCase):
     """
     Tests that cascade deletes cant happen on an activatable test model.
     """
     def test_no_cascade(self):
         rel = G(Rel)
         G(ActivatableModelWRel, rel_field=rel)
+        with self.assertRaises(models.ProtectedError):
+            rel.delete()
+
+    def test_allowed_cascade(self):
+        rel = G(Rel)
+        G(ActivatableModelWRelAndCascade, rel_field=rel)
         with self.assertRaises(models.ProtectedError):
             rel.delete()
 
