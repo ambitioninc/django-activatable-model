@@ -1,6 +1,13 @@
 Release Notes
 =============
 
+v0.9.0
+------
+* Add python 3.6 support
+* Drop django 1.8 support
+* Add django 1.10 support
+* Add django 1.11 support
+
 v0.7.3
 ------
 * Add python 3.5 support, drop django 1.7 support
