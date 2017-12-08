@@ -409,7 +409,7 @@ class ValidateDbTest(TestCase):
                 abstract = True
 
             is_active = models.BooleanField(default=False)
-            ctype = models.ForeignKey(ContentType)
+            ctype = models.ForeignKey(ContentType, on_delete=models.CASCADE)
 
         mock_get_activatable_models.return_value = [CascadableModel]
         with self.assertRaises(ValidationError):
