@@ -17,6 +17,11 @@ def get_version():
         raise RuntimeError('Unable to find version string in {0}.'.format(VERSION_FILE))
 
 
+install_requires = [
+    'Django>=1.11',
+    'django-manager-utils>=1.0.0',
+]
+
 tests_require = [
     'coverage',
     'psycopg2',
@@ -37,23 +42,17 @@ setup(
     packages=find_packages(),
     classifiers=[
         'Programming Language :: Python',
-        'Programming Language :: Python :: 2.7',
-        'Programming Language :: Python :: 3.4',
         'Programming Language :: Python :: 3.5',
         'Programming Language :: Python :: 3.6',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Framework :: Django',
-        'Framework :: Django :: 1.9',
-        'Framework :: Django :: 1.10',
         'Framework :: Django :: 1.11',
+        'Framework :: Django :: 2.0',
     ],
     license='MIT',
-    install_requires=[
-        'Django>=1.9',
-        'django-manager-utils>=0.13.0',
-    ],
+    install_requires=install_requires,
     tests_require=tests_require,
     extras_require={'dev': tests_require},
     test_suite='run_tests.run_tests',
