@@ -27,7 +27,7 @@ Assume you have a model called `Account` in your app, and it is an activatable
 model that has a `name` field and a `ForeignKey` to a `Group` model.
 
 ```python
-from activatable_model import BaseActivatableModel
+from activatable_model.models import BaseActivatableModel
 
 class Account(BaseActivatableModel):
     is_active = models.BooleanField(default=False)

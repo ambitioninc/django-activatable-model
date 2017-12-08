@@ -21,7 +21,7 @@ class ActivatableModelWRel(BaseActivatableModel):
 class ActivatableModelWRelAndCascade(BaseActivatableModel):
     ALLOW_CASCADE_DELETE = True
     is_active = models.BooleanField(default=False)
-    rel_field = models.ForeignKey(Rel)
+    rel_field = models.ForeignKey(Rel, on_delete=models.CASCADE)
 
 
 class ActivatableModelWNonDefaultField(BaseActivatableModel):
