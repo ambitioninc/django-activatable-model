@@ -1,6 +1,14 @@
 Release Notes
 =============
 
+v1.0.1
+------
+* Remove python 2.7 support
+* Remove python 3.4 support
+* Remove Django 1.9 support
+* Remove Django 1.10 support
+* Pin Django version to 1.11
+
 v1.0.0
 ------
 * Remove python 2.7 support

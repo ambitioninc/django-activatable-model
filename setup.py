@@ -18,7 +18,7 @@ def get_version():
 
 
 install_requires = [
-    'Django>=1.11',
+    'Django>=1.11,<2.0',
     'django-manager-utils>=1.0.0',
 ]
 
