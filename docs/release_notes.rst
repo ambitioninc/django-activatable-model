@@ -1,6 +1,10 @@
 Release Notes
 =============
 
+v1.0.1
+------
+* Do not import other models in the app registry
+
 v1.0.0
 ------
 * Remove python 2.7 support
