@@ -1,9 +1,9 @@
 Release Notes
 =============
 
-v1.0.1
+v1.1.0
 ------
-* Do not import other models in the app registry
+* Use tox to support more versions
 
 v1.0.0
 ------
