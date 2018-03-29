@@ -1,0 +1,6 @@
+coverage
+coveralls
+psycopg2
+django-dynamic-fixture
+django-nose
+mock
