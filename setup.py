@@ -35,6 +35,7 @@ setup(
     version=get_version(),
     description='Django Activatable Model',
     long_description=open('README.md').read(),
+    long_description_content_type='text/markdown',
     url='https://github.com/ambitioninc/django-activatable-model',
     author='Wes Kendall',
     author_email='opensource@ambition.com',
