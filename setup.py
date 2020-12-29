@@ -18,8 +18,8 @@ def get_version():
 
 
 install_requires = [
-    'Django>=1.11',
-    'django-manager-utils>=1.1.1',
+    'Django>=2.2',
+    'django-manager-utils>=2.0.0',
 ]
 
 tests_require = [
@@ -45,14 +45,14 @@ setup(
         'Programming Language :: Python',
         'Programming Language :: Python :: 3.6',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',
         'Operating System :: OS Independent',
         'Framework :: Django',
-        'Framework :: Django :: 1.11',
-        'Framework :: Django :: 2.0',
-        'Framework :: Django :: 2.1',
         'Framework :: Django :: 2.2',
+        'Framework :: Django :: 3.0',
+        'Framework :: Django :: 3.1',
     ],
     license='MIT',
     install_requires=install_requires,
