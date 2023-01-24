@@ -1,6 +1,12 @@
 Release Notes
 =============
 
+v3.0.0
+------
+* Django 3.2, 4.0, 4.1
+* support python 3.7, 3.8, 3.9
+* drop python 3.6
+
 v2.0.0
 ------
 * Only support Django 2.2, 3.0, 3.1
