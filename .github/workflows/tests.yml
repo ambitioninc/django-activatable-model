@@ -13,7 +13,7 @@ jobs:
       fail-fast: false
       matrix:
         python: ['3.7', '3.8', '3.9']
-        # Time to switch to pytest or nose2?
+        # Time to switch to pytest or nose2??
         # nosetests is broken on 3.10
         # AttributeError: module 'collections' has no attribute 'Callable'
         # https://github.com/nose-devs/nose/issues/1099
