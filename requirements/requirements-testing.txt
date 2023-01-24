@@ -1,5 +1,5 @@
 coverage
-coveralls
+#coveralls
 psycopg2
 django-dynamic-fixture
 django-nose

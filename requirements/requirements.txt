@@ -1,0 +1,2 @@
+Django>=2.2
+django-manager-utils>=2.0.0

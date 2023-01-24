@@ -12,41 +12,30 @@ def configure_settings():
         test_db = os.environ.get('DB', None)
         if test_db is None:
             db_config = {
-                'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                'NAME': 'ambition_test',
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'activatable_model',
                 'USER': 'postgres',
                 'PASSWORD': '',
                 'HOST': 'db',
-                'TEST': {
-                    'CHARSET': 'UTF8',
-                }
             }
         elif test_db == 'postgres':
             db_config = {
-                'ENGINE': 'django.db.backends.postgresql_psycopg2',
+                'ENGINE': 'django.db.backends.postgresql',
+                'NAME': 'activatable_model',
                 'USER': 'postgres',
-                'NAME': 'activatable_model',
-            }
-        elif test_db == 'sqlite':
-            db_config = {
-                'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': 'activatable_model',
+                'PASSWORD': '',
+                'HOST': 'db',
             }
         else:
             raise RuntimeError('Unsupported test DB {0}'.format(test_db))
 
-        travis_ci = os.environ.get('TRAVIS_CI', None)
-        if travis_ci:
-            db_config.update(
-                {
-                    'ENGINE': 'django.db.backends.postgresql_psycopg2',
-                    'USER': 'postgres',
-                    'NAME': 'activatable_model',
-                }
-            )
+        # Check env for db override (used for github actions)
+        if os.environ.get('DB_SETTINGS'):
+            db_config = json.loads(os.environ.get('DB_SETTINGS'))
 
         settings.configure(
             TEST_RUNNER='django_nose.NoseTestSuiteRunner',
+            SECRET_KEY='*',
             NOSE_ARGS=['--nocapture', '--nologcapture', '--verbosity=1'],
             MIDDLEWARE_CLASSES={},
             DATABASES={
