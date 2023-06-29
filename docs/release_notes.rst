@@ -1,6 +1,11 @@
 Release Notes
 =============
 
+v3.1.0
+------
+* Drop django 2
+* Add Django 4.2
+
 v3.0.1
 ------
 * Fix manifest
