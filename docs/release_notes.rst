@@ -5,6 +5,8 @@ v4.0.0
 ------
 * Support django 5.2 and 6.0, python 3.10 - 3.14
 * Drop support for python < 3.10 and django < 5.2
+* Require django-manager-utils >= 4.0.0 (the release line tested against the
+  same django/python matrix)
 * Replace django-nose with Django's ``DiscoverRunner``
 * Drop the unused admin app from the test settings and switch the tests to
   ``unittest.mock``
