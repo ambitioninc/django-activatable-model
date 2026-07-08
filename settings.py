@@ -35,18 +35,13 @@ def configure_settings():
             db_config = json.loads(os.environ.get('DB_SETTINGS'))
 
         settings.configure(
-            TEST_RUNNER='django_nose.NoseTestSuiteRunner',
             SECRET_KEY='*',
-            NOSE_ARGS=['--nocapture', '--nologcapture', '--verbosity=1'],
-            MIDDLEWARE_CLASSES={},
             DATABASES={
                 'default': db_config,
             },
             INSTALLED_APPS=(
                 'django.contrib.auth',
                 'django.contrib.contenttypes',
-                'django.contrib.sessions',
-                'django.contrib.admin',
                 'activatable_model',
                 'activatable_model.tests',
             ),
